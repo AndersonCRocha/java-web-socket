@@ -1,6 +1,7 @@
-package client;
+package udp;
 
 import utils.ClipboardUtils;
+import utils.Constants;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -11,22 +12,19 @@ import java.net.SocketException;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-public class Client {
-    public static final Logger LOG = Logger.getLogger(Client.class.getName());
-
-    public static final int DATA_LENGTH = 32 * 1024;
-    public static final int SERVER_PORT = 8080;
-    public static final String LOCALHOST = "50d6a29aaa8f.ngrok.io";
+public class UPDClient {
+    public static final Logger LOG = Logger.getLogger(UPDClient.class.getName());
 
     public static void main(String[] args) {
         LOG.info("Client is running!");
 
         try {
             DatagramSocket socket = new DatagramSocket();
-            InetAddress address = InetAddress.getByName(LOCALHOST);
+            InetAddress address = InetAddress.getByName(Constants.DEFAULT_SERVER_ADDRESS);
 
             while (true) {
-                Thread.sleep(500);
+                Thread.sleep(Constants.DEFAULT_AWAIT_TIME);
+
                 BufferedImage bufferedImage = ClipboardUtils.getImageFromClipboard();
                 if (Objects.isNull(bufferedImage)) {
                     System.out.println("There is no image in clipboard");
@@ -35,10 +33,11 @@ public class Client {
 
                 byte[] dataToSent = ClipboardUtils.convertBufferedImageToByteArray(bufferedImage);
                 DatagramPacket packetToSent = new DatagramPacket(dataToSent, dataToSent.length, address,
-                        SERVER_PORT);
+                        Constants.DEFAULT_SERVER_PORT);
                 socket.send(packetToSent);
 
-                DatagramPacket receivedPacket = new DatagramPacket(new byte[DATA_LENGTH], DATA_LENGTH);
+                DatagramPacket receivedPacket = new DatagramPacket(new byte[Constants.DATA_LENGTH],
+                        Constants.DATA_LENGTH);
                 socket.receive(receivedPacket);
                 String receivedSentence = new String(receivedPacket.getData()).trim();
 

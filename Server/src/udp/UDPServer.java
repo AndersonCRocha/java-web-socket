@@ -1,6 +1,7 @@
-package server;
+package udp;
 
 import utils.ClipboardUtils;
+import utils.Constants;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -12,20 +13,18 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.logging.Logger;
 
-public class Server {
-    public static final Logger LOG = Logger.getLogger(Server.class.getName());
-
-    public static final int DATA_LENGTH = 32 * 1024;
-    public static final int PORT = 8080;
+public class UDPServer {
+    public static final Logger LOG = Logger.getLogger(UDPServer.class.getName());
 
     public static void main(String[] args) {
-        LOG.info(String.format("Server is running in port: %d!", PORT));
+        LOG.info(String.format("Server is running in port: %d!", Constants.DEFAULT_SERVER_PORT));
 
         try {
-            DatagramSocket socket = new DatagramSocket(PORT);
+            DatagramSocket socket = new DatagramSocket(Constants.DEFAULT_SERVER_PORT);
 
             while (true) {
-                DatagramPacket receivedPacket = new DatagramPacket(new byte[DATA_LENGTH], DATA_LENGTH);
+                DatagramPacket receivedPacket = new DatagramPacket(new byte[Constants.DATA_LENGTH],
+                        Constants.DATA_LENGTH);
                 socket.receive(receivedPacket);
 
                 byte[] receivedBytes = receivedPacket.getData();

@@ -22,7 +22,7 @@ public class ClipboardUtils {
         return (String) clipboard.getData(DataFlavor.stringFlavor);
     }
 
-    public static BufferedImage getImageFromClipboard() throws IOException, UnsupportedFlavorException {
+    public static BufferedImage getImageFromClipboard() {
         Optional<Transferable> optional =
                 Optional.ofNullable(Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null));
 
@@ -60,4 +60,22 @@ public class ClipboardUtils {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(transferable, null);
     }
 
+    public static boolean bufferedImagesAreEquals(BufferedImage imageOne, BufferedImage imageTwo) {
+        if (Objects.isNull(imageOne) || Objects.isNull(imageTwo) ) {
+            return false;
+        }
+
+        if (imageOne.getWidth() == imageTwo.getWidth() && imageOne.getHeight() == imageTwo.getHeight()) {
+            for (int x = 0; x < imageOne.getWidth(); x++) {
+                for (int y = 0; y < imageOne.getHeight(); y++) {
+                    if (imageOne.getRGB(x, y) != imageTwo.getRGB(x, y))
+                        return false;
+                }
+            }
+        } else {
+            return false;
+        }
+
+        return true;
+    }
 }
