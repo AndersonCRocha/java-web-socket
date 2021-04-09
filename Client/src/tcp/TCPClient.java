@@ -4,12 +4,14 @@ import utils.ClipboardUtils;
 import utils.Constants;
 
 import java.awt.image.BufferedImage;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 public class TCPClient {
+
+    private static final Logger LOG = Logger.getLogger(TCPClient.class.getName());
 
     public static void main(String[] args) throws IOException {
         Socket server = null;
@@ -19,7 +21,7 @@ public class TCPClient {
             while (true) {
                 try {
                     Thread.sleep(Constants.DEFAULT_AWAIT_TIME);
-                    System.out.println("Connecting in server...");
+                    LOG.info("Connecting in server...");
 
                     server = new Socket(Constants.DEFAULT_SERVER_ADDRESS, Constants.DEFAULT_SERVER_PORT_NGROK);
 
@@ -29,18 +31,15 @@ public class TCPClient {
                     BufferedImage bufferedImage = ClipboardUtils.convertByteArrayToBufferedImage(bytes);
                     ClipboardUtils.setImageToClipboard(bufferedImage);
 
-                    FileOutputStream file = new FileOutputStream("resources/image.jpg");
-                    file.write(ClipboardUtils.convertBufferedImageToByteArray(bufferedImage));
-
-                    System.out.println("Added image to clipboard!");
+                    LOG.info("Added image to clipboard!");
                 } catch (IOException ex) {
-                    System.err.println("Cannot connect in server");
+                    LOG.severe(String.format("Cannot connect in server: %s", ex.getMessage()));
                 } catch ( InterruptedException | ClassNotFoundException e) {
                     e.printStackTrace();
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOG.severe(ex.getMessage());
         } finally {
             if (server != null) server.close();
             if (objectInputStream != null) objectInputStream.close();
