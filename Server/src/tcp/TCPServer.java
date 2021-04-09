@@ -5,10 +5,9 @@ import utils.Constants;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Objects;
 import java.util.logging.Logger;
 
 public class TCPServer {
@@ -18,42 +17,33 @@ public class TCPServer {
     public static void main(String[] args) throws IOException {
         ServerSocket server = null;
         Socket client = null;
-        ObjectOutputStream objectOutputStream;
-        BufferedImage lastSentImage = null;
+        ObjectInputStream objectInputStream;
 
         try {
             server = new ServerSocket(Constants.DEFAULT_SERVER_PORT);
             LOG.info("Waiting connection request...");
             client = server.accept();
+            LOG.info(String.format("Client accepted: %s", client));
 
             while (true) {
                 Thread.sleep(Constants.DEFAULT_AWAIT_TIME);
 
                 if (client.isClosed()) {
                     client = server.accept();
-                    client.setKeepAlive(true);
-                    continue;
+                    LOG.info(String.format("Client accepted: %s", client));
                 }
 
-                BufferedImage bufferedImage = ClipboardUtils.getImageFromClipboard();
-                if (
-                    Objects.isNull(bufferedImage) || ClipboardUtils.bufferedImagesAreEquals(lastSentImage,bufferedImage)
-                ) {
-                    continue;
-                }
+                objectInputStream = new ObjectInputStream(client.getInputStream());
 
-                lastSentImage = bufferedImage;
+                byte[] bytes = (byte[]) objectInputStream.readObject();
+                BufferedImage bufferedImage = ClipboardUtils.convertByteArrayToBufferedImage(bytes);
+                ClipboardUtils.setImageToClipboard(bufferedImage);
+                objectInputStream.close();
 
-                LOG.info("Sending image");
-                objectOutputStream = new ObjectOutputStream(client.getOutputStream());
-
-                objectOutputStream.flush();
-                objectOutputStream.writeObject(ClipboardUtils.convertBufferedImageToByteArray(bufferedImage));
-                objectOutputStream.close();
-
-                LOG.info("Image sent.");
+                LOG.info("Added image to clipboard");
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | ClassNotFoundException | InterruptedException e) {
+            e.printStackTrace();
             LOG.severe(e.getMessage());
         } finally {
             if (server != null) server.close();
